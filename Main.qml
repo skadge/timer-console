@@ -6,6 +6,7 @@ ApplicationWindow {
     id: window
     width: 800
     height: 480
+    visibility: "FullScreen"
     visible: true
     title: qsTr("Timer console")
 
@@ -61,6 +62,13 @@ ApplicationWindow {
         width: parent.width
         height: parent.height/5
         color: "grey"
+
+        FontLoader {
+            id: myFont
+            //source: "res/AH_PUNCH.otf"
+            source: "res/BerlinSansFB.ttf"
+        }
+
         Text {
             height: parent.height
             anchors.horizontalCenter: parent.horizontalCenter
@@ -68,6 +76,7 @@ ApplicationWindow {
             text: window.day
             color: "lightgrey"
             font.pixelSize: 80
+            font.family: myFont.name
 
         }
     }

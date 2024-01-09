@@ -11,19 +11,34 @@ Rectangle {
 
     property string name
 
-    color: "lightgrey"
+    color: "white"
 
     property bool isActive: false
     property double timeLeft: 60*60
 
+    AnimatedImage {
+        id: hourglass
+        anchors.horizontalCenter: parent.horizontalCenter
+        width: 100
+        height: 100
+        source: "res/hourglass.gif"
+        playing: parent.isActive
+        onPlayingChanged: {
+            if (!playing) {
+                currentFrame = 0;
+            }
+        }
+    }
+
     Text {
         id: name_label
         anchors.horizontalCenter: parent.horizontalCenter
-        anchors.top: parent.top
+        anchors.top: hourglass.bottom
         anchors.topMargin: 10
 
         text:parent.name
-        color: parent.isActive ? "red": "black"
+        font.family: myFont.name
+        color: parent.isActive ? "green": "black"
         font.pixelSize: 40
     }
 
@@ -38,6 +53,7 @@ Rectangle {
         property int seconds: Math.abs(parent.timeLeft % 60)
 
         text: (parent.timeLeft < 0 ? "-":"") + hours + ":" + String(minutes).padStart(2,"0") + ":" + String(seconds).padStart(2,"0")
+        font.family: myFont.name
         color: parent.timeLeft > 0 ? "black" : "red"
         font.pixelSize: 40
     }
@@ -48,6 +64,7 @@ Rectangle {
         anchors.top: counter.bottom
         anchors.topMargin: 10
         text: parent.timeLeft < 0 ? "time out!":""
+        font.family: myFont.name
         color: "red"
         font.pixelSize: 30
     }
@@ -82,6 +99,13 @@ Rectangle {
             }
       }
     }
+
+    FontLoader {
+        id: myFont
+        //source: "res/AH_PUNCH.otf"
+        source: "res/BerlinSansFB.ttf"
+    }
+
 
 function reset(time) {
     console.log("Resetting time for " + name + " to " + time + "s");
