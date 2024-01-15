@@ -1,0 +1,8 @@
+Type=Application
+Name=Screen timer
+Comment=A little tool to keep track of how much time we spend in fort on the screens
+GenericName=Timer
+Icon=document-open-recent-symbolic
+Exec=/home/guakamole/src/timer-console/main.py
+Terminal=false
+Categories=Utility;
