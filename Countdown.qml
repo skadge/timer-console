@@ -107,14 +107,18 @@ Rectangle {
     }
 
 
-function reset(time) {
-    console.log("Resetting time for " + name + " to " + time + "s");
-    if (timeLeft < 0) {
-        // if we were previously overtime, substract this time from the new allowance
-        timeLeft = time + timeLeft;
-    }
-    else {
-        timeLeft = time;
-    }
+function reset(fulltime) {
+    console.log("Resetting time for " + name + " to " + fulltime + "s");
+    //if (timeLeft < 0) {
+    //    // if we were previously overtime, substract this time from the new allowance
+    //    timeLeft = fulltime + timeLeft;
+    //}
+    //else {
+    //    timeLeft = fulltime;
+    //}
+
+    // if overtime the previous day, the overtime is deduced from the available time for this day
+    // if time left from previous day, time is added up to a maximum of  2 times the daily time allowance
+    timeLeft = Math.min(fulltime + timeLeft, fulltime * 2);
 }
 }
