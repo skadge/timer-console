@@ -68,7 +68,7 @@ ApplicationWindow {
     Rectangle {
         id: date_label
         width: parent.width
-        height: parent.height/5
+        height: parent.height/6
         color: "grey"
 
         FontLoader {
@@ -83,7 +83,7 @@ ApplicationWindow {
             anchors.verticalCenter: parent.verticalCenter
             text: window.day
             color: "lightgrey"
-            font.pixelSize: 80
+            font.pixelSize: 60
             font.family: myFont.name
 
         }
@@ -126,13 +126,13 @@ ApplicationWindow {
         anchors.leftMargin: 20
         anchors.right: parent.right
         anchors.bottom: parent.bottom
-        height: parent.height / 10
+        height: parent.height / 8
         color: "transparent"
 
         Row {
             id: busUpdatersRow
             anchors.fill: parent
-            spacing: 75
+            spacing: 85
 
             function createBusUpdaters() {
                 let component = Qt.createComponent("Bus.qml");

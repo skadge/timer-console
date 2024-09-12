@@ -19,8 +19,8 @@ Rectangle {
     AnimatedImage {
         id: hourglass
         anchors.horizontalCenter: parent.horizontalCenter
-        width: 100
-        height: 100
+        width: 80
+        height: 80
         source: "res/hourglass.gif"
         playing: parent.isActive
         onPlayingChanged: {
@@ -34,7 +34,7 @@ Rectangle {
         id: name_label
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: hourglass.bottom
-        anchors.topMargin: 10
+        anchors.topMargin: 5
 
         text:parent.name
         font.family: myFont.name
@@ -72,7 +72,7 @@ Rectangle {
     Button {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: timeout_label.bottom
-        anchors.topMargin: 40
+        anchors.topMargin: 20
 
         text: parent.isActive ? "Stop":"Start"
         font.pixelSize: 30
