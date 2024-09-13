@@ -46,7 +46,7 @@ Rectangle {
                     return;
                 }
 
-                const result = response.map(item => item["text-ca"]).join(" / ");
+                const result = response.map(item => item["text-ca"]).join("\n");
                 console.log(parent.name + ": " + result);
                 etaLabel.text = result;
             });

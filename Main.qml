@@ -22,13 +22,13 @@ ApplicationWindow {
         "dimanche": {"maud":90*60, "zoe": 90*60, "elouan": 90*60},
     }
 
-    property var buses: {
-        "H2": {"stop":"3639", "color": Qt.rgba(0.10,0.40,0.90,1)}, // H2 to circus
-        "V23": {"stop":"824", "color": Qt.rgba(0.10,0.90,0.30,1)}, // V23 to Mas Casanovas
-        "117": {"stop":"824", "color": Qt.rgba(0.90,0.40,0.40,1)}, // 117 to Goya
-        "V25": {"stop":"649", "color": Qt.rgba(0.10,0.90,0.30,1)}, // V25 towards center
-        "19": {"stop":"649", "color": Qt.rgba(0.90,0.40,0.40,1)}, // 19 towards center
-    }
+    property var buses: [
+        {"name": "H2", "stop":"3639", "color": Qt.rgba(0.10,0.40,0.90,1)}, // H2 to circus
+        {"name": "V23", "stop":"824", "color": Qt.rgba(0.10,0.90,0.30,1)}, // V23 to Mas Casanovas
+        {"name": "117", "stop":"824", "color": Qt.rgba(0.90,0.40,0.40,1)}, // 117 to Goya
+        {"name": "V25", "stop":"649", "color": Qt.rgba(0.10,0.90,0.30,1)}, // V25 towards center
+        {"name": "19", "stop":"649", "color": Qt.rgba(0.90,0.40,0.40,1)}, // 19 towards center
+    ]
 
     function set_times() {
         c_maud.reset(timeAllowances[day]["maud"]);
@@ -137,12 +137,11 @@ ApplicationWindow {
             function createBusUpdaters() {
                 let component = Qt.createComponent("Bus.qml");
 
-                for (let name in buses) {
+                for (let idx in buses) {
                     let busUpdater = component.createObject(busUpdatersRow, {
-                                                                name: name,
-                                                                stopCode: buses[name]["stop"],
-                                                                busLineIndex: buses[name]["line"],
-                                                                color: buses[name]["color"]
+                                                                name: buses[idx]["name"],
+                                                                stopCode: buses[idx]["stop"],
+                                                                color: buses[idx]["color"]
                                                             });
 
                     if (busUpdater == null) {
