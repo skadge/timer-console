@@ -39,7 +39,7 @@ Rectangle {
         text:parent.name
         font.family: myFont.name
         color: parent.isActive ? "green": "black"
-        font.pixelSize: 40
+        font.pixelSize: 30
     }
 
     Text {
@@ -55,7 +55,7 @@ Rectangle {
         text: (parent.timeLeft < 0 ? "-":"") + hours + ":" + String(minutes).padStart(2,"0") + ":" + String(seconds).padStart(2,"0")
         font.family: myFont.name
         color: parent.timeLeft > 0 ? "black" : "red"
-        font.pixelSize: 40
+        font.pixelSize: 30
     }
 
     Text {
@@ -66,16 +66,16 @@ Rectangle {
         text: parent.timeLeft < 0 ? "time out!":""
         font.family: myFont.name
         color: "red"
-        font.pixelSize: 30
+        font.pixelSize: 25
     }
 
     Button {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: timeout_label.bottom
-        anchors.topMargin: 20
+        anchors.topMargin: 10
 
         text: parent.isActive ? "Stop":"Start"
-        font.pixelSize: 30
+        font.pixelSize: 20
         onPressed: {
             parent.isActive = !parent.isActive;
         }
@@ -109,16 +109,17 @@ Rectangle {
 
 function reset(fulltime) {
     console.log("Resetting time for " + name + " to " + fulltime + "s");
-    //if (timeLeft < 0) {
-    //    // if we were previously overtime, substract this time from the new allowance
-    //    timeLeft = fulltime + timeLeft;
-    //}
-    //else {
-    //    timeLeft = fulltime;
-    //}
+    if (timeLeft < 0) {
+        // if we were previously overtime, substract this time from the new allowance
+        timeLeft = fulltime + timeLeft;
+	timeLeft = Math.max(timeLeft, -60*60);
+    }
+    else {
+        timeLeft = fulltime;
+    }
 
     // if overtime the previous day, the overtime is deduced from the available time for this day
     // if time left from previous day, time is added up to a maximum of  2 times the daily time allowance
-    timeLeft = Math.min(fulltime + timeLeft, fulltime * 2);
+    //timeLeft = Math.min(fulltime + timeLeft, fulltime * 2);
 }
 }
