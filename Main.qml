@@ -1,5 +1,6 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
+import QtQuick.Layouts 1.15
 import Qt.labs.settings 1.0
 
 ApplicationWindow {
@@ -65,93 +66,125 @@ ApplicationWindow {
         property alias elouan: c_elouan.timeLeft
     }
 
-    Rectangle {
-        id: date_label
-        width: parent.width
-        height: parent.height/6
-        color: "grey"
-
-        FontLoader {
-            id: myFont
-            //source: "res/AH_PUNCH.otf"
-            source: "res/BerlinSansFB.ttf"
-        }
-
-        Text {
-            height: parent.height
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.verticalCenter: parent.verticalCenter
-            text: window.day
-            color: "lightgrey"
-            font.pixelSize: 60
-            font.family: myFont.name
-
-        }
+    FontLoader {
+        id: myFont
+        source: "res/BerlinSansFB.ttf"
     }
 
-    Item {
-        id: timers
-        width: parent.width
-        anchors.top: date_label.bottom
-        anchors.topMargin: 20
-        anchors.bottom: bus_schedule.top
-        anchors.bottomMargin: 20
+    ColumnLayout {
+        anchors.fill: parent
+        spacing: 0
 
-        Countdown {
-            id: c_maud
-            name: "Maud"
-            anchors.left: parent.left
-            anchors.leftMargin: parent.width/16
-            width: parent.width/4
+        TabBar {
+            id: tabBar
+            Layout.fillWidth: true
+
+            TabButton {
+                text: qsTr("Timer")
+                font.pixelSize: 24
+            }
+            TabButton {
+                text: qsTr("Radio")
+                font.pixelSize: 24
+            }
         }
-        Countdown {
-            id: c_zoe
-            anchors.left: c_maud.right
-            anchors.leftMargin: parent.width/16
-            name: "Zoé"
-            width: parent.width/4
-        }
-        Countdown {
-            id: c_elouan
-            anchors.left: c_zoe.right
-            anchors.leftMargin: parent.width/16
-            name: "Élouan"
-            width: parent.width/4
-        }
-    }
 
-    Rectangle {
-        id: bus_schedule
-        anchors.left: parent.left
-        anchors.leftMargin: 20
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-        height: parent.height / 8
-        color: "transparent"
+        StackLayout {
+            id: pages
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            currentIndex: tabBar.currentIndex
 
-        Row {
-            id: busUpdatersRow
-            anchors.fill: parent
-            spacing: 85
+            // ---- Timer page ------------------------------------------ //
+            Item {
+                id: timerPage
 
-            function createBusUpdaters() {
-                let component = Qt.createComponent("Bus.qml");
+                Rectangle {
+                    id: date_label
+                    width: parent.width
+                    height: parent.height / 5
+                    color: "grey"
 
-                for (let idx in buses) {
-                    let busUpdater = component.createObject(busUpdatersRow, {
-                                                                name: buses[idx]["name"],
-                                                                stopCode: buses[idx]["stop"],
-                                                                color: buses[idx]["color"]
-                                                            });
+                    Text {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: window.day
+                        color: "lightgrey"
+                        font.pixelSize: 60
+                        font.family: myFont.name
+                    }
+                }
 
-                    if (busUpdater == null) {
-                        // Error Handling
-                        console.log("Error creating bus updater for " + name);
+                Item {
+                    id: timers
+                    width: parent.width
+                    anchors.top: date_label.bottom
+                    anchors.topMargin: 20
+                    anchors.bottom: parent.bottom
+                    anchors.bottomMargin: 20
+
+                    Countdown {
+                        id: c_maud
+                        name: "Maud"
+                        anchors.left: parent.left
+                        anchors.leftMargin: parent.width/16
+                        width: parent.width/4
+                    }
+                    Countdown {
+                        id: c_zoe
+                        anchors.left: c_maud.right
+                        anchors.leftMargin: parent.width/16
+                        name: "Zoé"
+                        width: parent.width/4
+                    }
+                    Countdown {
+                        id: c_elouan
+                        anchors.left: c_zoe.right
+                        anchors.leftMargin: parent.width/16
+                        name: "Élouan"
+                        width: parent.width/4
                     }
                 }
             }
 
-            Component.onCompleted: createBusUpdaters();
+            // ---- Radio page ------------------------------------------ //
+            RadioPage {
+                id: radioPage
+            }
+        }
+
+        // ---- Bus schedule (shared across both tabs) ------------------ //
+        Rectangle {
+            id: bus_schedule
+            Layout.fillWidth: true
+            Layout.preferredHeight: window.height / 8
+            Layout.leftMargin: 20
+            color: "transparent"
+
+            Row {
+                id: busUpdatersRow
+                anchors.fill: parent
+                spacing: 85
+
+                function createBusUpdaters() {
+                    let component = Qt.createComponent("Bus.qml");
+
+                    for (let idx in buses) {
+                        let busUpdater = component.createObject(busUpdatersRow, {
+                                                                    name: buses[idx]["name"],
+                                                                    stopCode: buses[idx]["stop"],
+                                                                    color: buses[idx]["color"]
+                                                                });
+
+                        if (busUpdater == null) {
+                            // Error Handling
+                            console.log("Error creating bus updater for " + name);
+                        }
+                    }
+                }
+
+                Component.onCompleted: createBusUpdaters();
+            }
         }
     }
 
