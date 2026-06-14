@@ -7,11 +7,21 @@ Item {
 
     // Web radio stations. Stream URLs are plain HTTP(S) streams that MPD can
     // play directly; edit/extend this list as needed.
+    // BBC streams use the BBC "nonuk" HLS path (the old direct hosts were
+    // decommissioned and the standard HLS pools are UK-geo-restricted). The
+    // a.files.bbci.co.uk master URL is stable and redirects to the live pool.
+    readonly property string bbcHls:
+        "https://a.files.bbci.co.uk/ms6/live/3441A116-B12E-4D2F-ACA8-C1984642FA4B/audio/simulcast/hls/nonuk/pc_hd_abr_v2/cf"
+
     property var stations: [
         {"name": "France Inter",   "url": "https://icecast.radiofrance.fr/franceinter-midfi.mp3", "color": "#e2001a"},
         {"name": "France Info",    "url": "https://icecast.radiofrance.fr/franceinfo-midfi.mp3",  "color": "#cc1f2e"},
+        {"name": "Radio Nova",     "url": "http://novazz.ice.infomaniak.ch/novazz-128.mp3",        "color": "#f0a500"},
         {"name": "Radio Paradise", "url": "https://stream.radioparadise.com/mp3-192",             "color": "#3a6ea5"},
-        {"name": "BBC Radio 1",    "url": "http://stream.live.vc.bbcmedia.co.uk/bbc_radio_one",   "color": "#d4145a"},
+        {"name": "BBC Radio 1",    "url": radioPage.bbcHls + "/bbc_radio_one.m3u8",    "color": "#d4145a"},
+        {"name": "BBC Radio 2",    "url": radioPage.bbcHls + "/bbc_radio_two.m3u8",    "color": "#e94f1d"},
+        {"name": "BBC Radio 3",    "url": radioPage.bbcHls + "/bbc_radio_three.m3u8",  "color": "#009ca6"},
+        {"name": "BBC Radio 4",    "url": radioPage.bbcHls + "/bbc_radio_fourfm.m3u8", "color": "#6b3fa0"},
     ]
 
     // Mirror the station list into MPD stored playlists so other clients
@@ -129,16 +139,23 @@ Item {
             radius: 8
 
             ListView {
+                id: stationList
                 anchors.fill: parent
                 anchors.margins: 8
-                spacing: 8
+                spacing: 6
                 clip: true
                 model: radioPage.stations
                 boundsBehavior: Flickable.StopAtBounds
 
+                ScrollBar.vertical: ScrollBar {
+                    policy: stationList.contentHeight > stationList.height
+                            ? ScrollBar.AlwaysOn : ScrollBar.AsNeeded
+                    width: 6
+                }
+
                 delegate: Rectangle {
-                    width: ListView.view.width
-                    height: 72
+                    width: ListView.view.width - (stationList.ScrollBar.vertical.visible ? 10 : 0)
+                    height: 54
                     radius: 8
                     property bool current: mpd.currentUrl === modelData.url
                     color: current ? modelData.color : "#2c2c2c"
@@ -152,9 +169,9 @@ Item {
                         spacing: 12
 
                         Rectangle {
-                            width: 14
-                            height: 14
-                            radius: 7
+                            width: 12
+                            height: 12
+                            radius: 6
                             color: modelData.color
                             border.color: "white"
                             border.width: 1
@@ -164,7 +181,7 @@ Item {
                             Layout.fillWidth: true
                             text: modelData.name
                             color: "white"
-                            font.pixelSize: 24
+                            font.pixelSize: 20
                             font.bold: current
                             elide: Text.ElideRight
                         }
@@ -173,7 +190,7 @@ Item {
                             text: "♫"
                             visible: current && mpd.state === "play"
                             color: "white"
-                            font.pixelSize: 22
+                            font.pixelSize: 18
                         }
                     }
 
