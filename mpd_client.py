@@ -214,7 +214,15 @@ class MPDClient(QObject):
         title = self._title
         key = (artist + "|" + title).strip()
 
-        if not artist or not title or key == "|" or key == self._last_cover_key:
+        # Web radios without ICY metadata expose no artist/title: there is
+        # nothing to look up, so drop any cover art left over from the
+        # previously-playing station (QML then falls back to the logo).
+        if not artist or not title:
+            self._last_cover_key = ""
+            self._set_cover_art("")
+            return
+
+        if key == self._last_cover_key:
             return
         self._last_cover_key = key
 
@@ -290,6 +298,11 @@ class MPDClient(QObject):
     @pyqtSlot(str)
     def playStation(self, url):
         self._set_current_url(url)
+        # Drop any stale art/metadata from the previous station right away so
+        # the UI does not briefly show the wrong cover while the new stream's
+        # metadata (if any) arrives.
+        self._last_cover_key = ""
+        self._set_cover_art("")
         self._send("clear")
         self._send('add "{}"'.format(self._quote(url)))
         self._send("play")

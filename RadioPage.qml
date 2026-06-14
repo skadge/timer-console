@@ -14,15 +14,25 @@ Item {
         "https://a.files.bbci.co.uk/ms6/live/3441A116-B12E-4D2F-ACA8-C1984642FA4B/audio/simulcast/hls/nonuk/pc_hd_abr_v2/cf"
 
     property var stations: [
-        {"name": "France Inter",   "url": "https://icecast.radiofrance.fr/franceinter-midfi.mp3", "color": "#e2001a"},
-        {"name": "France Info",    "url": "https://icecast.radiofrance.fr/franceinfo-midfi.mp3",  "color": "#cc1f2e"},
-        {"name": "Radio Nova",     "url": "http://novazz.ice.infomaniak.ch/novazz-128.mp3",        "color": "#f0a500"},
-        {"name": "Radio Paradise", "url": "https://stream.radioparadise.com/mp3-192",             "color": "#3a6ea5"},
-        {"name": "BBC Radio 1",    "url": radioPage.bbcHls + "/bbc_radio_one.m3u8",    "color": "#d4145a"},
-        {"name": "BBC Radio 2",    "url": radioPage.bbcHls + "/bbc_radio_two.m3u8",    "color": "#e94f1d"},
-        {"name": "BBC Radio 3",    "url": radioPage.bbcHls + "/bbc_radio_three.m3u8",  "color": "#009ca6"},
-        {"name": "BBC Radio 4",    "url": radioPage.bbcHls + "/bbc_radio_fourfm.m3u8", "color": "#6b3fa0"},
+        {"name": "France Inter",   "url": "https://icecast.radiofrance.fr/franceinter-midfi.mp3", "color": "#e2001a", "logo": "res/logos/logo_france_inter.svg"},
+        {"name": "France Info",    "url": "https://icecast.radiofrance.fr/franceinfo-midfi.mp3",  "color": "#cc1f2e", "logo": "res/logos/logo_franceinfo.svg"},
+        {"name": "Radio Nova",     "url": "http://novazz.ice.infomaniak.ch/novazz-128.mp3",        "color": "#f0a500", "logo": "res/logos/logo_radio_nova.svg"},
+        {"name": "Radio Paradise", "url": "https://stream.radioparadise.com/mp3-192",             "color": "#3a6ea5", "logo": "res/logos/logo_radio_paradise.svg"},
+        {"name": "BBC Radio 1",    "url": radioPage.bbcHls + "/bbc_radio_one.m3u8",    "color": "#d4145a", "logo": "res/logos/logo_bbc_radio_1.svg"},
+        {"name": "BBC Radio 2",    "url": radioPage.bbcHls + "/bbc_radio_two.m3u8",    "color": "#e94f1d", "logo": "res/logos/logo_bbc_radio_2.svg"},
+        {"name": "BBC Radio 3",    "url": radioPage.bbcHls + "/bbc_radio_three.m3u8",  "color": "#009ca6", "logo": "res/logos/logo_bbc_radio_3.svg"},
+        {"name": "BBC Radio 4",    "url": radioPage.bbcHls + "/bbc_radio_fourfm.m3u8", "color": "#6b3fa0", "logo": "res/logos/logo_bbc_radio_4.svg"},
     ]
+
+    // Logo of the currently-playing station, used as a fallback when the
+    // stream provides no cover art. Re-evaluates when the station changes.
+    function logoForUrl(url) {
+        for (var i = 0; i < stations.length; i++)
+            if (stations[i].url === url)
+                return stations[i].logo || "";
+        return "";
+    }
+    readonly property string currentLogo: logoForUrl(mpd.currentUrl)
 
     // Mirror the station list into MPD stored playlists so other clients
     // (myMPD, mpc, ...) can start the same stations.
@@ -60,7 +70,8 @@ Item {
                     color: "#262626"
                     border.color: "#3a3a3a"
                     border.width: 1
-                    visible: cover.status !== Image.Ready
+                    // Shown only when there is neither real cover art nor a logo.
+                    visible: !cover.visible && !logoCard.visible
 
                     Text {
                         anchors.centerIn: parent
@@ -70,6 +81,7 @@ Item {
                     }
                 }
 
+                // Real album/cover art from the stream: fills the square.
                 Image {
                     id: cover
                     anchors.centerIn: parent
@@ -78,7 +90,34 @@ Item {
                     fillMode: Image.PreserveAspectFit
                     asynchronous: true
                     cache: false
+                    visible: mpd.coverArt !== "" && status === Image.Ready
                     source: mpd.coverArt
+                }
+
+                // Station-logo fallback when the stream has no cover art. The
+                // logos are designed for light backgrounds, so show them on a
+                // white rounded card with padding.
+                Rectangle {
+                    id: logoCard
+                    anchors.centerIn: parent
+                    width: coverArea.side
+                    height: coverArea.side
+                    radius: 10
+                    color: "white"
+                    visible: mpd.coverArt === "" && logo.status === Image.Ready
+
+                    Image {
+                        id: logo
+                        anchors.fill: parent
+                        anchors.margins: coverArea.side * 0.12
+                        fillMode: Image.PreserveAspectFit
+                        asynchronous: true
+                        cache: false
+                        source: mpd.coverArt === "" ? radioPage.currentLogo : ""
+                        // Render the SVG at display resolution for crisp edges.
+                        sourceSize.width: coverArea.side
+                        sourceSize.height: coverArea.side
+                    }
                 }
             }
 
