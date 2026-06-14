@@ -54,6 +54,10 @@ class MPDClient(QObject):
         self._cover_art = ""
         self._current_url = ""
 
+        # (name, url) pairs mirrored into MPD as stored playlists so that
+        # other clients (myMPD, mpc, ...) can start the same stations.
+        self._stations = []
+
         # protocol state
         self._greeted = False
         self._busy = False
@@ -124,6 +128,7 @@ class MPDClient(QObject):
                 self._set_connected(True)
                 self._poll.start()
                 self._refresh()
+                self._sync_stations()
                 self._pump()
             return
 
@@ -156,6 +161,11 @@ class MPDClient(QObject):
         self._current_cb = cb
         self._response_lines = []
         self._socket.write((command + "\n").encode("utf-8"))
+
+    @staticmethod
+    def _quote(value):
+        # Escape a value for an MPD command argument wrapped in double quotes.
+        return value.replace("\\", "\\\\").replace('"', '\\"')
 
     @staticmethod
     def _parse_kv(lines):
@@ -281,7 +291,7 @@ class MPDClient(QObject):
     def playStation(self, url):
         self._set_current_url(url)
         self._send("clear")
-        self._send('add "{}"'.format(url.replace("\\", "\\\\").replace('"', '\\"')))
+        self._send('add "{}"'.format(self._quote(url)))
         self._send("play")
         self._refresh()
 
@@ -290,6 +300,41 @@ class MPDClient(QObject):
         self._send("stop")
         self._set_current_url("")
         self._refresh()
+
+    @pyqtSlot("QVariantList")
+    def setStations(self, stations):
+        # Receive the QML station list (objects with "name"/"url") and mirror
+        # it into MPD stored playlists. Kept here so the sync can be re-run on
+        # every (re)connect, not just once at startup.
+        self._stations = [
+            (s["name"], s["url"])
+            for s in stations
+            if s.get("name") and s.get("url")
+        ]
+        if self._greeted:
+            self._sync_stations()
+
+    # ------------------------------------------------------------------ #
+    # Stored-playlist sync (one playlist per station)
+    # ------------------------------------------------------------------ #
+    def _sync_stations(self):
+        if not self._stations:
+            return
+        # Find which playlists already exist so we only "rm" real ones
+        # (removing a missing playlist would raise a noisy ACK).
+        self._send("listplaylists", self._do_sync_stations)
+
+    def _do_sync_stations(self, lines):
+        existing = {
+            value
+            for key, sep, value in (line.partition(": ") for line in lines)
+            if key == "playlist"
+        }
+        for name, url in self._stations:
+            qname = self._quote(name)
+            if name in existing:
+                self._send('rm "{}"'.format(qname))
+            self._send('playlistadd "{}" "{}"'.format(qname, self._quote(url)))
 
     # ------------------------------------------------------------------ #
     # Internal setters (emit change notifications)

@@ -14,6 +14,10 @@ Item {
         {"name": "BBC Radio 1",    "url": "http://stream.live.vc.bbcmedia.co.uk/bbc_radio_one",   "color": "#d4145a"},
     ]
 
+    // Mirror the station list into MPD stored playlists so other clients
+    // (myMPD, mpc, ...) can start the same stations.
+    Component.onCompleted: mpd.setStations(radioPage.stations)
+
     Rectangle {
         anchors.fill: parent
         color: "#141414"
